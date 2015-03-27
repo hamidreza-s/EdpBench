@@ -16,7 +16,8 @@ send({Node, Process}, Msg) ->
 benchmark(NodeProcess, MsgSize, Count) ->
    State1 = [],
    State2 = lists:append(State1, [{start_time, now()}]),
-   do_benchmark(NodeProcess, ?MSG(MsgSize), State2, Count).
+   State3 = lists:append(State2, [{msg_count, Count}]),
+   do_benchmark(NodeProcess, ?MSG(MsgSize), State3, Count).
 
 do_benchmark(NodeProcess, Msg, State, Count) when Count > 0 ->
    send(NodeProcess, Msg),
@@ -28,8 +29,24 @@ do_benchmark(NodeProcess, Msg, State, _Count) ->
 report({Node, Process}, Msg, State) ->
    EndTime = now(),
    StartTime = proplists:get_value(start_time, State),
-   TimeDuration = timer:now_diff(EndTime, StartTime),
+   MsgSize = byte_size(Msg),
+   MsgCount = proplists:get_value(msg_count, State),
+   TimeDuration = timer:now_diff(EndTime, StartTime) / 1000000,
+   MsgRate = MsgCount / TimeDuration,
    error_logger:info_msg(
-      "Done in ~p microseconds.~nNode: ~p - process: ~p~nMsg size: ~p~n~n", 
-      [TimeDuration, Node, Process, byte_size(Msg)]
+      "Done in ~p seconds.~n" ++ 
+      "Remote Node: ~p~n" ++
+      "Remote Process: ~p~n" ++
+      "Msg count: ~p~n" ++
+      "Msg size: ~p byte~n" ++
+      "Msg rate: ~p msg/sec~n" ++
+      "===============~n~n",
+      [
+         TimeDuration, 
+         Node, 
+         Process, 
+         MsgCount, 
+         MsgSize, 
+         MsgRate
+      ]
    ).
