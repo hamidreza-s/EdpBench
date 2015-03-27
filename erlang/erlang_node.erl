@@ -31,22 +31,28 @@ report({Node, Process}, Msg, State) ->
    StartTime = proplists:get_value(start_time, State),
    MsgSize = byte_size(Msg),
    MsgCount = proplists:get_value(msg_count, State),
+   TotalMsgSize = MsgSize * MsgCount / 1000000,
    TimeDuration = timer:now_diff(EndTime, StartTime) / 1000000,
    MsgRate = MsgCount / TimeDuration,
+   TransferRate = TotalMsgSize / TimeDuration,
    error_logger:info_msg(
-      "Done in ~p seconds.~n" ++ 
       "Remote Node: ~p~n" ++
       "Remote Process: ~p~n" ++
       "Msg count: ~p~n" ++
-      "Msg size: ~p byte~n" ++
+      "Msg size (each): ~p byte~n" ++
+      "Msg size (total): ~p mbyte~n" ++
       "Msg rate: ~p msg/sec~n" ++
+      "Transfer rate: ~p mbyte/sec~n" ++
+      "Total time: ~p sec~n" ++
       "===============~n~n",
       [
-         TimeDuration, 
          Node, 
          Process, 
          MsgCount, 
-         MsgSize, 
-         MsgRate
+         MsgSize,
+         TotalMsgSize,
+         MsgRate,
+         TransferRate,
+         TimeDuration
       ]
    ).
