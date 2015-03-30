@@ -6,18 +6,28 @@
    list_to_binary([ 255 || _ <- lists:seq(1, ByteSize)])
 ).
 
+start() ->
+   log("==> erlang node started~n", []),
+   benchmark({?REMOTE_NODE, ?REMOTE_PROCESS}, ?MSG_SIZE, ?MSG_COUNT).
+
 connect(Node) ->
-   net_adm:ping(Node).
+   case net_adm:ping(Node) of
+      pong -> ok;
+      pang ->
+         log("~p is not accessible.~n", [Node]),
+         nok
+   end.
 
 send({Node, Process}, Msg) ->
    {Process, Node} ! {self(), Msg},
    receive {_, _} -> ok end.
 
-benchmark(NodeProcess, MsgSize, Count) ->
+benchmark({Node, Process}, MsgSize, Count) ->
+   ok = connect(Node),
    State1 = [],
    State2 = lists:append(State1, [{start_time, now()}]),
    State3 = lists:append(State2, [{msg_count, Count}]),
-   do_benchmark(NodeProcess, ?MSG(MsgSize), State3, Count).
+   do_benchmark({Node, Process}, ?MSG(MsgSize), State3, Count).
 
 do_benchmark(NodeProcess, Msg, State, Count) when Count > 0 ->
    send(NodeProcess, Msg),
@@ -35,16 +45,17 @@ report({Node, Process}, Msg, State) ->
    TimeDuration = timer:now_diff(EndTime, StartTime) / 1000000,
    MsgRate = MsgCount / TimeDuration,
    TransferRate = TotalMsgSize / TimeDuration,
-   error_logger:info_msg(
-      "Remote Node: ~p~n" ++
-      "Remote Process: ~p~n" ++
-      "Msg count: ~p~n" ++
-      "Msg size (each): ~p byte~n" ++
-      "Msg size (total): ~p mbyte~n" ++
-      "Msg rate: ~p msg/sec~n" ++
-      "Transfer rate: ~p mbyte/sec~n" ++
-      "Total time: ~p sec~n" ++
-      "===============~n~n",
+   log(
+      "==> Report:~n" ++
+      "====> Remote Node: ~p~n" ++
+      "====> Remote Process: ~p~n" ++
+      "====> Msg count: ~p~n" ++
+      "====> Msg size (each): ~p byte~n" ++
+      "====> Msg size (total): ~p mbyte~n" ++
+      "====> Msg rate: ~p msg/sec~n" ++
+      "====> Transfer rate: ~p mbyte/sec~n" ++
+      "====> Total time: ~p sec~n" ++
+      "==> End~n~n",
       [
          Node, 
          Process, 
@@ -56,3 +67,6 @@ report({Node, Process}, Msg, State) ->
          TimeDuration
       ]
    ).
+
+log(Text, Params) ->
+   io:format(Text, Params).

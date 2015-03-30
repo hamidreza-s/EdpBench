@@ -14,7 +14,7 @@ public class JavaNode
 
    public void start() throws Exception
    {
-      log(this.nodeName + " startd!");
+      log("==> java node startd");
       this.loop();
    }
 
@@ -36,7 +36,6 @@ public class JavaNode
          incomingMsgSender = (OtpErlangPid) incomingMsg.elementAt(0);
          incomingMsgBody = (OtpErlangBinary) incomingMsg.elementAt(1);
          otpMbox.send(incomingMsgSender, incomingMsg);
-
       }
    }
 
