@@ -1,8 +1,9 @@
 PWD := $(shell pwd)
+HOST_NAME := $(shell hostname -s)
 JAVA_NODE := "java_node"
 JAVA_PROCESS := "java_process"
 JAVA_PID_PATH := "/tmp/java_edp.pid"
-REMOTE_NODE := "java_node@localhost"
+REMOTE_NODE := $(addsuffix $(HOST_NAME), "java_node@")
 REMOTE_PROCESS := "java_process"
 ERLANG_MODULE := "erlang_node"
 ERLANG_NODE := "erlang_node"
@@ -28,6 +29,7 @@ run: java_compile erlang_compile
 		-cp "$(PWD)/java/:$(PWD)/java/lib/OtpErlang.jar" \
 		JavaNode $(JAVA_NODE) $(JAVA_PROCESS) & echo $$! > $(JAVA_PID_PATH)
 	@echo "==> running erlang node"
+	@sleep 2
 	@erl \
 		-sname $(ERLANG_NODE) \
 		-pa $(PWD)/erlang \
