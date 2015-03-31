@@ -7,8 +7,18 @@ REMOTE_PROCESS := "java_process"
 ERLANG_MODULE := "erlang_node"
 ERLANG_NODE := "erlang_node"
 JAVA_CLASS := "JavaNode"
-MSG_SIZE := 1000
-MSG_COUNT := 1000
+
+ifdef MS
+   MSG_SIZE := $(MS)
+else
+   MSG_SIZE := 1000
+endif
+
+ifdef MC
+   MSG_COUNT := $(MC)
+else
+   MSG_COUNT := 1000
+endif
 
 .PHONY: run compile java_compile erlang_compile
 
